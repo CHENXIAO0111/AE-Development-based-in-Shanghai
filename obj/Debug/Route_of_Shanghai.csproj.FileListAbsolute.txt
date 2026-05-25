@@ -6,12 +6,13 @@ E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\obj\Debug\Route_of_Sha
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\Route_of_Shanghai.exe.config
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\Route_of_Shanghai.exe
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\Route_of_Shanghai.pdb
-E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.ADF.dll
-E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.AxControls.dll
-E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.Version.dll
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.Server.dll
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.ADF.xml
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.Server.xml
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\obj\Debug\Route_of_Shanghai.exe
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\obj\Debug\Route_of_Shanghai.pdb
 E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\obj\Debug\Route_of_Shanghai.csproj.CopyComplete
+E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\obj\Debug\Route_of_Shanghai.csprojAssemblyReference.cache
+E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.ADF.dll
+E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.AxControls.dll
+E:\组件gis\AE开发\Route_of_Shanghai\Route_of_Shanghai\bin\Debug\ESRI.ArcGIS.Version.dll

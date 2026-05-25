@@ -113,6 +113,9 @@ namespace Route_of_Shanghai
             // 绑定外挂式侧边栏位置与尺寸随动同步事件
             this.LocationChanged += (s, e) => SyncQueryFormPosition();
             this.SizeChanged += (s, e) => SyncQueryFormPosition();
+            
+            // 初始化行驶模式下拉框默认选中
+            this.cbo_TravelMode.SelectedIndex = 0;
         }
 
         #region 投影
@@ -139,7 +142,7 @@ namespace Route_of_Shanghai
         {
             pnlPathResult = new Panel();
             pnlPathResult.Width = 200; // 缩小宽度，更加精致
-            pnlPathResult.Height = 42;  // 缩小高度，去除冗余空间
+            pnlPathResult.Height = 62;  // 增高以容纳两行文字
             pnlPathResult.BackColor = Color.FromArgb(220, 45, 45, 45); // 深灰色半透明背景
             pnlPathResult.Visible = false;
             pnlPathResult.BorderStyle = BorderStyle.None; // 扁平化无边框设计
@@ -175,12 +178,17 @@ namespace Route_of_Shanghai
 
         private void ShowPathResult(string message)
         {
+            // 防御性检查：确保悬浮窗已创建，若未创建则立即初始化
+            if (pnlPathResult == null || lblPathResult == null)
+            {
+                InitializePathResultPanel();
+            }
             lblPathResult.Text = message;
             pnlPathResult.Visible = true;
             UpdatePathResultPanelLocation(); // 显示时即时重新定位
             pnlPathResult.BringToFront();
-            pathResultTimer.Stop();
-            pathResultTimer.Start();
+            pathResultTimer?.Stop();
+            pathResultTimer?.Start();
         }
 
         private void ClearPathPlanningResults()
@@ -640,7 +648,8 @@ namespace Route_of_Shanghai
 
         #region 求解路径
 
-        private void SolvePath(string weightName)
+        // 计算指定权重下的路径费用并返回
+        private double SolvePath(string weightName)
         {
             if (mPointToEID == null)
             {
@@ -737,19 +746,15 @@ namespace Route_of_Shanghai
                         weightName
                     );
 
-                w.FromToEdgeWeight =
-                    weight;
-
-                w.ToFromEdgeWeight =
-                    weight;
+                w.FromToEdgeWeight = weight;
+                w.ToFromEdgeWeight = weight;
             }
             catch
             {
 
             }
 
-            object[] res =
-                new object[count - 1];
+            object[] res = new object[count - 1];
 
             pSolver.FindPath(
                 esriFlowMethod.esriFMConnected,
@@ -760,15 +765,12 @@ namespace Route_of_Shanghai
                 ref res
             );
 
-            mdblPathCost = 0;
-
-            for (int i = 0;
-                i < count - 1;
-                i++)
+            double pathCost = 0;
+            for (int i = 0; i < count - 1; i++)
             {
-                mdblPathCost +=
-                    (double)res[i];
+                pathCost += (double)res[i];
             }
+            return pathCost;
         }
 
         #endregion
@@ -972,10 +974,9 @@ namespace Route_of_Shanghai
                     );
                 }
 
-                SolvePath("Length");
+                double length = SolvePath("Length");
 
-                IPolyline line =
-                    PathToPolyline();
+                IPolyline line = PathToPolyline();
 
                 if (line == null)
                 {
@@ -1005,7 +1006,8 @@ namespace Route_of_Shanghai
                 
                 axMapControl1.Refresh();
 
-                ShowPathResult("路径长度：" + mdblPathCost.ToString("F2") + " 米");
+                double kmLength = length / 1000;
+                ShowPathResult($"路径长度：{kmLength:F2} km");
             }
             catch (Exception ex)
             {
@@ -1033,82 +1035,59 @@ namespace Route_of_Shanghai
                 if (cbo_StartPoint.SelectedIndex < 0 ||
                     cbo_EndPoint.SelectedIndex < 0)
                 {
-                    throw new Exception(
-                        "请选择起点终点"
-                    );
+                    throw new Exception("请选择起点终点");
                 }
 
-                mPointCollection =
-                    new Multipoint()
-                    as IPointCollection;
+                // Determine travel mode and set speed (meters per second)
+                string travelMode = "车行";
+                if (cbo_TravelMode != null && cbo_TravelMode.SelectedItem != null)
+                    travelMode = cbo_TravelMode.SelectedItem.ToString();
+                // Car: 15 km/h, Pedestrian: 5 km/h
+                double speedMps = travelMode == "车行" ? 40.0/3.6 : 5.0/3.6; // speed in meters/second
 
-                object miss =
-                    Type.Missing;
-
-                mPointCollection.AddPoint(
-                    heritagePoints[cbo_StartPoint.SelectedIndex],
-                    ref miss,
-                    ref miss
-                );
-
+                // 构建点集合
+                mPointCollection = new Multipoint() as IPointCollection;
+                object miss = Type.Missing;
+                mPointCollection.AddPoint(heritagePoints[cbo_StartPoint.SelectedIndex], ref miss, ref miss);
                 if (cbo_WayPoint.SelectedIndex >= 0)
-                { mPointCollection.AddPoint(heritagePoints[cbo_WayPoint.SelectedIndex], ref miss, ref miss); }
+                    mPointCollection.AddPoint(heritagePoints[cbo_WayPoint.SelectedIndex], ref miss, ref miss);
+                mPointCollection.AddPoint(heritagePoints[cbo_EndPoint.SelectedIndex], ref miss, ref miss);
 
-                mPointCollection.AddPoint(
-                    heritagePoints[cbo_EndPoint.SelectedIndex],
-                    ref miss,
-                    ref miss
-                );
+                // 先获取长度
+                double length = SolvePath("Length");
+                // 再获取时间（根据行驶模式）
+                double time = speedMps > 0 ? length / speedMps : 0; // estimated time in seconds
 
-                SolvePath("Length");
-
-                IPolyline line =
-                    PathToPolyline();
-
+                IPolyline line = PathToPolyline();
                 if (line == null)
-                {
-                    throw new Exception(
-                        "无法生成路径"
-                    );
-                }
+                    throw new Exception("无法生成路径");
 
-                mCurrentPathLine =
-                    line;
-
+                mCurrentPathLine = line;
                 DrawPath(line);
 
-                // 在绘制完路径后，立即绘制起点、途经点和终点的名称标注
+                // 标注起止点
                 AddPointLabel(heritagePoints[cbo_StartPoint.SelectedIndex], cbo_StartPoint.Text, "起点");
                 if (cbo_WayPoint.SelectedIndex >= 0)
-                {
                     AddPointLabel(heritagePoints[cbo_WayPoint.SelectedIndex], cbo_WayPoint.Text, "途经点");
-                }
                 AddPointLabel(heritagePoints[cbo_EndPoint.SelectedIndex], cbo_EndPoint.Text, "终点");
 
-                // 规划后缩放到路径，并适当处理比例尺
+                // 缩放到路径
                 IEnvelope pathEnvelope = line.Envelope;
                 IEnvelope mapExtent = axMapControl1.Extent;
-                
-                // 扩展一定的缓冲距离，避免只显示一部分
                 double bufferScale = Math.Max(mapExtent.Width, mapExtent.Height) * 0.1;
                 pathEnvelope.Expand(bufferScale, bufferScale, false);
-                
-                // 确保扩展后的 envelope 在地图空间范围内是有效的
                 if (pathEnvelope.Width > 0 && pathEnvelope.Height > 0)
-                {
                     axMapControl1.Extent = pathEnvelope;
-                }
-                
                 axMapControl1.Refresh();
 
-                ShowPathResult("路径长度：" + mdblPathCost.ToString("F2") + " 米");
+                double kmLength = length / 1000;
+                TimeSpan ts = TimeSpan.FromSeconds(time);
+                string timeStr = $"{ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
+                ShowPathResult($"路径长度：{kmLength:F2} km\r\n预计时间：{timeStr}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    "失败：" +
-                    ex.Message
-                );
+                MessageBox.Show("失败：" + ex.Message);
             }
             finally
             {
@@ -1439,9 +1418,10 @@ namespace Route_of_Shanghai
                 feature.set_Value(featureClass.Fields.FindField("Length"), mdblPathCost);
                 feature.Store();
 
+                double kmLength = mdblPathCost / 1000;
                 MessageBox.Show(
                     "路径导出成功！\r\n" +
-                    "路径长度：" + mdblPathCost.ToString("F2") + " 米");
+                    "路径长度：" + kmLength.ToString("F2") + " km");
             }
             catch (Exception ex)
             {
@@ -1652,6 +1632,7 @@ namespace Route_of_Shanghai
                 cbo_StartPoint.FlatStyle = FlatStyle.Flat;
                 cbo_WayPoint.FlatStyle = FlatStyle.Flat;
                 cbo_EndPoint.FlatStyle = FlatStyle.Flat;
+                cbo_TravelMode.FlatStyle = FlatStyle.Flat;
             }
             catch
             {
@@ -1706,14 +1687,22 @@ namespace Route_of_Shanghai
                 cbo_EndPoint.Location = new System.Drawing.Point(15, 175);
                 cbo_EndPoint.Width = groupBox1.Width - 30;
 
+                // 行驶模式
+                labelTravelMode.Font = labelFont;
+                labelTravelMode.ForeColor = labelColor;
+                labelTravelMode.Location = new System.Drawing.Point(15, 215);
+                cbo_TravelMode.Font = comboFont;
+                cbo_TravelMode.Location = new System.Drawing.Point(15, 240);
+                cbo_TravelMode.Width = groupBox1.Width - 30;
+
                 // 开始规划按钮 (扁平圆角感金棕色)
-                btn_PlanPath.Location = new System.Drawing.Point(15, 230);
+                btn_PlanPath.Location = new System.Drawing.Point(15, 280);
                 btn_PlanPath.Width = groupBox1.Width - 30;
                 btn_PlanPath.Height = 40;
                 btn_PlanPath.Font = new Font("微软雅黑", 9.5F, FontStyle.Bold);
 
                 // 清空路径按钮 (扁平白底金边)
-                btn_ClearPath.Location = new System.Drawing.Point(15, 280);
+                btn_ClearPath.Location = new System.Drawing.Point(15, 330);
                 btn_ClearPath.Width = groupBox1.Width - 30;
                 btn_ClearPath.Height = 35;
                 btn_ClearPath.Font = new Font("微软雅黑", 9F, FontStyle.Regular);
@@ -1722,6 +1711,7 @@ namespace Route_of_Shanghai
                 cbo_StartPoint.BackColor = Color.White;
                 cbo_WayPoint.BackColor = Color.White;
                 cbo_EndPoint.BackColor = Color.White;
+                cbo_TravelMode.BackColor = Color.White;
 
                 // 5. 绑定容器大小改变事件，自适应宽度
                 groupBox1.SizeChanged += (s, e) =>
@@ -1729,6 +1719,7 @@ namespace Route_of_Shanghai
                     cbo_StartPoint.Width = groupBox1.Width - 30;
                     cbo_WayPoint.Width = groupBox1.Width - 30;
                     cbo_EndPoint.Width = groupBox1.Width - 30;
+                    cbo_TravelMode.Width = groupBox1.Width - 30;
                     btn_PlanPath.Width = groupBox1.Width - 30;
                     btn_ClearPath.Width = groupBox1.Width - 30;
                 };

@@ -61,6 +61,8 @@ namespace Route_of_Shanghai
             this.label1 = new System.Windows.Forms.Label();
             this.axLicenseControl1 = new ESRI.ArcGIS.Controls.AxLicenseControl();
             this.axMapControl1 = new ESRI.ArcGIS.Controls.AxMapControl();
+            this.labelTravelMode = new System.Windows.Forms.Label();
+            this.cbo_TravelMode = new System.Windows.Forms.ComboBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             tsmi_Query_ClearResult = new System.Windows.Forms.ToolStripMenuItem();
@@ -275,6 +277,8 @@ namespace Route_of_Shanghai
             this.groupBox1.Controls.Add(this.cbo_StartPoint);
             this.groupBox1.Controls.Add(this.btn_ClearPath);
             this.groupBox1.Controls.Add(this.btn_PlanPath);
+            this.groupBox1.Controls.Add(this.labelTravelMode);
+            this.groupBox1.Controls.Add(this.cbo_TravelMode);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
@@ -319,7 +323,7 @@ namespace Route_of_Shanghai
             this.btn_ClearPath.BackColor = System.Drawing.Color.LightGray;
             this.btn_ClearPath.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_ClearPath.Font = new System.Drawing.Font("微软雅黑", 9F);
-            this.btn_ClearPath.Location = new System.Drawing.Point(20, 320);
+            this.btn_ClearPath.Location = new System.Drawing.Point(20, 345);
             this.btn_ClearPath.Name = "btn_ClearPath";
             this.btn_ClearPath.Size = new System.Drawing.Size(240, 40);
             this.btn_ClearPath.TabIndex = 7;
@@ -332,7 +336,7 @@ namespace Route_of_Shanghai
             this.btn_PlanPath.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_PlanPath.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Bold);
             this.btn_PlanPath.ForeColor = System.Drawing.Color.White;
-            this.btn_PlanPath.Location = new System.Drawing.Point(20, 265);
+            this.btn_PlanPath.Location = new System.Drawing.Point(20, 290);
             this.btn_PlanPath.Name = "btn_PlanPath";
             this.btn_PlanPath.Size = new System.Drawing.Size(240, 45);
             this.btn_PlanPath.TabIndex = 6;
@@ -340,8 +344,27 @@ namespace Route_of_Shanghai
             this.btn_PlanPath.UseVisualStyleBackColor = false;
             this.btn_PlanPath.Click += new System.EventHandler(this.button1_Click);
             // 
-            // label3
+            // labelTravelMode
             // 
+            this.labelTravelMode.AutoSize = true;
+            this.labelTravelMode.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Bold);
+            this.labelTravelMode.Location = new System.Drawing.Point(17, 225);
+            this.labelTravelMode.Name = "labelTravelMode";
+            this.labelTravelMode.Size = new System.Drawing.Size(84, 25);
+            this.labelTravelMode.TabIndex = 4;
+            this.labelTravelMode.Text = "行驶模式";
+            // 
+            // cbo_TravelMode
+            // 
+            this.cbo_TravelMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbo_TravelMode.FormattingEnabled = true;
+            this.cbo_TravelMode.Items.AddRange(new object[] { "车行", "人行" });
+            this.cbo_TravelMode.Location = new System.Drawing.Point(20, 255);
+            this.cbo_TravelMode.Name = "cbo_TravelMode";
+            this.cbo_TravelMode.Size = new System.Drawing.Size(240, 26);
+            this.cbo_TravelMode.TabIndex = 5;
+            // 
+
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Bold);
             this.label3.Location = new System.Drawing.Point(17, 168);
@@ -468,6 +491,8 @@ namespace Route_of_Shanghai
         private System.Windows.Forms.ToolStripMenuItem tsmi_MapTool_ZoomOut;
         private System.Windows.Forms.ToolStripMenuItem tsmi_MapTool_Pan;
         private System.Windows.Forms.ToolStripMenuItem menuStrip_BuildingHeritageQuery;
+        private System.Windows.Forms.Label labelTravelMode;
+        private System.Windows.Forms.ComboBox cbo_TravelMode;
         private System.Windows.Forms.ToolStripMenuItem tsmi_Query;
         private System.Windows.Forms.Button btn_ClearPath;
         private System.Windows.Forms.ComboBox cbo_EndPoint;
